@@ -11,13 +11,33 @@ class Task:
         self.dueDate = dueDate
         self.priorityLevel = priority
 
-# + setTaskName(name: String): void
+    # + setTaskName(name: String): void
     def setTaskName(self, name: str):
+        """
+        Updates the Task's Name
+        """
         self.taskName = name
 
-# + setTaskDes(description: String): void
+    # + setTaskDes(description: String): void
     def setTaskDes(self, description: str):
+        """
+        Updates the Task's Description
+        """
         self.taskDes = description
+
+    # + getTaskName(): string
+    def getTaskName(self) -> str:
+        """
+        Retrieves the Task's Name
+        """
+        return self.taskName
+
+    # + getTaskDes(): string
+    def getTaskDes(self) -> str:
+        """
+        Retrieves the Task's Description
+        """
+        return self.taskDes
 
 
 # helper class for the Status dropdown attribute
