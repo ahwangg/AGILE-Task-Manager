@@ -80,3 +80,18 @@ class PriorityLevel():
     
     # def updatePriority(dropdownVal: int):
         # return
+
+# + markComplete(): void
+def markComplete(self):
+    """
+    Marks the task as completed.
+    """
+    self.status.status = "Completed"
+
+
+# + archive(): void
+def archive(self):
+    """
+    Archives the task so it no longer appears in active task lists.
+    """
+    self.isArchived = True
