@@ -25,6 +25,16 @@ class Task:
         """
         self.taskDes = description
 
+    # + setDueDate(dueDate: datetime): void
+    def setDueDate(self, dueDate: datetime):
+        """
+        Updates the Task's Due Date
+        """
+        if not isinstance(dueDate, datetime):
+            raise ValueError("Due date must be a datetime object")
+        
+        self.dueDate = dueDate
+
     # + getTaskName(): string
     def getTaskName(self) -> str:
         """
@@ -38,6 +48,21 @@ class Task:
         Retrieves the Task's Description
         """
         return self.taskDes
+    
+    # + autoAssignPriority(): void
+    def autoAssignPriority(self):
+        """
+        Automatically assigns the Task's Priority based on its Due Date
+        """
+        now = datetime.now()
+        days_remaining = (self.dueDate - now).days
+
+        if days_remaining <= 1:
+            self.priorityLevel.priority = "High"
+        elif days_remaining <=3:
+            self.priorityLevel.priority = "Medium"
+        else:
+            self.priorityLevel.priority = "Low"
 
 
 # helper class for the Status dropdown attribute
