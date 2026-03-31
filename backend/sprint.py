@@ -11,6 +11,8 @@ class Sprint:
         # Track sprint status
         self.active = False
 
+        # default point value
+        self.totalPoints = 0
 
     # + startSprint(): bool
     def startSprint(self) -> bool:
@@ -22,7 +24,6 @@ class Sprint:
             return True
         return False
 
-
     # + endSprint(): bool
     def endSprint(self) -> bool:
         """
@@ -32,3 +33,11 @@ class Sprint:
             self.active = False
             return True
         return False
+    
+    # +getPoints():int
+    def getPoints(self) -> int:
+        return self.totalPoints
+    
+    # +updatePoints():void
+    def updatePoints(self, points: int):
+        self.totalPoints = points
