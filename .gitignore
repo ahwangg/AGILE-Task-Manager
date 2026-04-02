@@ -1,0 +1,13 @@
+# Python
+backend/venv/
+__pycache__/
+
+# React
+frontend/node_modules/
+frontend/build/
+
+# macOS
+.DS_Store
+
+# env
+.env
