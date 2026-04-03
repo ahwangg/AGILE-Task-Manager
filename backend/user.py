@@ -22,9 +22,12 @@ class User:
         '''
         self.email = updated_email
 
-    # + update_password(updated_password: str): void
-    def update_password(self, updated_password: str):
+    # + update_password(updated_password: str, confirm_password: str): void
+    def update_password(self, updated_password: str, confirm_password: str):
         '''
-        Updates the users password
+        Updates the users password if both passwords match
         '''
+        if updated_password != confirm_password:
+            raise ValueError("Passwords do not match!")
+        
         self.password = updated_password
