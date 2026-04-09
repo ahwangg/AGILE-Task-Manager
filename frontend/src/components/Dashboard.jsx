@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjects } from "../api/api";
+//import { getProjects } from "../api/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
@@ -8,20 +8,29 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getProjects()
-      .then(data => {
-        setProjects(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
+  // MOCK DATA — replace later with real API
+  setProjects([
+    { id: 1, name: "Task Manager" },
+    { id: 2, name: "Final Project" },
+    { id: 3, name: "Agile Sprint Board" }
+  ]);
+  setLoading(false);
+}, []);
+  // useEffect(() => {
+  //   getProjects()
+  //     .then(data => {
+  //       setProjects(data);
+  //       setLoading(false);
+  //     })
+  //     .catch(err => {
+  //       console.error(err);
+  //       setLoading(false);
+  //     });
+  // }, []);
 
-  if (loading) {
-    return <h2>Loading projects...</h2>;
-  }
+  // if (loading) {
+  //   return <h2>Loading projects...</h2>;
+  // }
 
   return (
     <div>

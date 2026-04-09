@@ -1,10 +1,11 @@
-import UserSettings from "./components/UserSettings";
+import { BrowserRouter } from "react-router-dom";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   return (
-    <div>
-      <UserSettings />
-    </div>
+    <BrowserRouter>
+      <Dashboard />
+    </BrowserRouter>
   );
 }
 
