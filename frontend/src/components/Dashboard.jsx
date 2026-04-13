@@ -48,7 +48,11 @@ export default function Dashboard() {
               key={project.id}
               project={project}
               delay={i * 120}
-              onClick={() => navigate(`/projects/${project.id}`)}
+              onClick={() =>
+                navigate("/sprint", {
+                  state: { projectId: project.id },
+                })
+              }
             />
           ))}
 

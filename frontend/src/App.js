@@ -1,10 +1,19 @@
 import { BrowserRouter } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
+import Sprint from "./components/Sprint";
 
 function App() {
   return (
     <BrowserRouter>
-      <Dashboard />
+      <Routes>
+
+        {/* Dashboard */}
+        <Route path="/" element={<Dashboard />} />
+
+        {/* Sprint Board */}
+        <Route path="/sprint" element={<Sprint />} />
+
+      </Routes>
     </BrowserRouter>
   );
 }
