@@ -64,14 +64,28 @@ class Task:
         else:
             self.priorityLevel.priority = "Low"
 
+    # + archive(): void
+    def archive(self):
+        """
+        Archives the task so it no longer appears in active task lists.
+        """
+        self.isArchived = True
+
 
 # helper class for the Status dropdown attribute
 class TaskStatus():
     def __init__(self):
-        self.status = "Not Started"
+        self.status = "todo"
     
     # def updateStatus(self, dropdownVal: int):
         # return
+    
+        # + markComplete(): void
+    def markComplete(self):
+        """
+        Marks the task as completed.
+        """
+        self.status.status = "done"
 
 # helper class for the Priority dropdown attribute
 class PriorityLevel():
@@ -80,18 +94,3 @@ class PriorityLevel():
     
     # def updatePriority(dropdownVal: int):
         # return
-
-# + markComplete(): void
-def markComplete(self):
-    """
-    Marks the task as completed.
-    """
-    self.status.status = "Completed"
-
-
-# + archive(): void
-def archive(self):
-    """
-    Archives the task so it no longer appears in active task lists.
-    """
-    self.isArchived = True

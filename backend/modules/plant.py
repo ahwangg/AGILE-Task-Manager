@@ -1,26 +1,38 @@
-from flask import Flask, jsonify, render_template
-
+# from flask import Flask, jsonify, render_template
+from fastapi import FastAPI
 from sprint import *
 
-app = Flask(__name__)
+app = FastAPI()
 
 # total tasks & completed tasks
 # total:
 
-
-def getPlantStage(points):
-    if points < 25:
-        return "images/seed_plant.webp"
-    elif points < 50:
-        "images/sprout_plant.webp"
-    elif points < 75:
-        "images/leafy_plant.webp"
-    elif points < 100:
-        "images/bloom_plant.webp"
+def getPlantStage(point_percent):
+    if point_percent < 25:
+        return "/frontend/src/assets/images/seed_plant.webp"
+    elif point_percent < 50:
+        return "/frontend/src/assets/images/sprout_plant.webp"
+    elif point_percent < 75:
+        return "/frontend/src/assets/images/leafy_plant.webp"
+    elif point_percent < 100:
+        return "/frontend/src/assets/images/bloom_plant.webp"
     else:
-        "images/flower_plant.webp"
+        return "/frontend/src/assets/images/flower_plant.webp"
 
-@app.route("/")
-def home():
-    return
-    # points = 
+def calculate_progress(points, total):
+    if total == 0:
+        return 0
+    return (points/total) * 100
+
+@app.get("/plant")
+def plant():
+    total = 10
+    points = 4
+
+    point_percent = calculate_progress(points, total)
+    stage = getPlantStage(point_percent)
+
+    return {
+        "progress": point_percent,
+        "image": stage
+    }
