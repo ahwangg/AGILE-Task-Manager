@@ -22,6 +22,55 @@ function Sprint() {
     dueDate: "",
   });
 
+  const handleTaskFormChange = (field, value) => {
+    setTaskForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const resetTaskForm = () => {
+    setTaskForm({ name: "", description: "", priority: "Low", dueDate: "" });
+    setSelectedSprintForTask("");
+  };
+
+  const handleCreateTask = async (e) => {
+    e.preventDefault();
+
+    if (!taskForm.name.trim()) {
+      alert("Task name is required");
+      return;
+    }
+
+    if (!selectedSprintForTask) {
+      alert("Please select a sprint");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sprintId: selectedSprintForTask,
+          name: taskForm.name,
+          description: taskForm.description,
+          priority: taskForm.priority,
+          dueDate: taskForm.dueDate
+      })
+    });
+
+      if (!res.ok) throw new Error("Failed to create task");
+
+      const newTask = await res.json();
+      setTasks(prev => [...prev, newTask]);
+      setShowTaskModal(false);
+      resetTaskForm();
+    } catch (error) {
+      alert("Error creating task: " + error.message);
+    }
+  };
+
   // -----------------------------
   // CREATE SPRINT
   // -----------------------------
@@ -203,6 +252,78 @@ function Sprint() {
           </div>
         </div>
 
+  {showTaskModal && (
+  <div style={styles.modalOverlay} onClick={() => setShowTaskModal(false)}>
+    <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+      <h2 style={styles.modalTitle}>Create New Task</h2>
+      <form onSubmit={handleCreateTask} style={{...styles.form, display: "flex", flexDirection: "column", gap: "15px"}}>
+        
+        <div>
+          <label style={styles.label}>Select Sprint:</label>
+          <select
+            value={selectedSprintForTask}
+            onChange={(e) => setSelectedSprintForTask(e.target.value)}
+            style={styles.input}
+          >
+            <option value="">-- Choose a sprint --</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={styles.label}>Task Name:</label>
+          <input
+            type="text"
+            value={taskForm.name}
+            onChange={(e) => handleTaskFormChange("name", e.target.value)}
+            placeholder="Enter task name"
+            style={styles.input}
+          />
+        </div>
+
+        <div>
+          <label style={styles.label}>Description:</label>
+          <textarea
+            value={taskForm.description}
+            onChange={(e) => handleTaskFormChange("description", e.target.value)}
+            placeholder="Enter task description"
+            style={{...styles.input, minHeight: "80px", fontFamily: "Arial"}}
+          />
+        </div>
+
+        <div>
+          <label style={styles.label}>Priority:</label>
+          <select
+            value={taskForm.priority}
+            onChange={(e) => handleTaskFormChange("priority", e.target.value)}
+            style={styles.input}
+          >
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={styles.label}>Due Date:</label>
+          <input
+            type="date"
+            value={taskForm.dueDate}
+            onChange={(e) => handleTaskFormChange("dueDate", e.target.value)}
+            style={styles.input}
+          />
+        </div>
+
+        <div style={styles.buttonGroup}>
+          <button type="submit" style={styles.button}>Create Task</button>
+          <button type="button" onClick={() => setShowTaskModal(false)} style={{...styles.button, backgroundColor: "#999"}}>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
         {/* MAIN LAYOUT */}
         <div style={styles.mainLayout}>
           {/* SIDEBAR */}
@@ -238,6 +359,10 @@ function Sprint() {
                 <button style={styles.btn} onClick={addTask}>
                   Add Task
                 </button>
+              </div>
+
+              <div style={styles.row}>
+                <button style={styles.btn} onClick={() => setShowTaskModal(true)}>Create Task Modal</button>
               </div>
 
               <div style={styles.row}>
@@ -504,6 +629,44 @@ const styles = {
     borderRadius: 5,
     fontSize: 12,
   },
+
+  modalOverlay: {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000
+},
+modalContent: {
+  backgroundColor: "#f5f5f5",
+  borderRadius: "8px",
+  padding: "30px",
+  maxWidth: "500px",
+  width: "90%",
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)"
+},
+modalTitle: {
+  marginBottom: "20px",
+  color: "#333",
+  fontSize: "24px"
+},
+label: {
+  display: "block",
+  marginTop: "15px",
+  marginBottom: "5px",
+  fontWeight: "bold",
+  color: "#333"
+},
+buttonGroup: {
+  marginTop: "20px",
+  display: "flex",
+  gap: "10px"
+}
 };
 
 export default Sprint;
