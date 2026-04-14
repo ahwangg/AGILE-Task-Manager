@@ -13,6 +13,15 @@ function Sprint() {
   const [taskName, setTaskName] = useState("");
   const [visible] = useState(true);
 
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedSprintForTask, setSelectedSprintForTask] = useState("");
+  const [taskForm, setTaskForm] = useState({
+    name: "",
+    description: "",
+    priority: "Low",
+    dueDate: "",
+  });
+
   // -----------------------------
   // CREATE SPRINT
   // -----------------------------
