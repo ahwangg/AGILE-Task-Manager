@@ -111,6 +111,9 @@ def create_task():
 
     sprint_id = data.get("sprintId")
     name = data.get("name")
+    description = data.get("description", "")
+    priority = data.get("priority", "Low")
+    due_date = data.get("dueDate", "")
 
     if not sprint_id or not name:
         return jsonify({"error": "Missing data"}), 400
@@ -121,10 +124,14 @@ def create_task():
         "id": task_id,
         "sprintId": sprint_id,
         "name": name,
-        "status": "todo"
+        "description": description,
+        "priority": priority,
+        "dueDate": due_date,
+        "status": "todo",
+        "createdAt": datetime.now().isoformat()
     }
 
-    return jsonify(tasks[task_id])
+    return jsonify(tasks[task_id]), 201
 
 
 # -----------------------------
