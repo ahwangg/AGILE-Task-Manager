@@ -343,27 +343,15 @@ function Sprint() {
               </form>
             </div>
 
-            {/* ACTIONS */}
-            <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Actions</h2>
+                    {/* ACTIONS */}
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Actions</h2>
 
-              {/* TASK INPUT */}
-              <input
-                style={styles.input}
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-                placeholder="Enter task name"
-              />
-
-              <div style={styles.row}>
-                <button style={styles.btn} onClick={addTask}>
-                  Add Task
-                </button>
-              </div>
-
-              <div style={styles.row}>
-                <button style={styles.btn} onClick={() => setShowTaskModal(true)}>Create Task Modal</button>
-              </div>
+          <div style={styles.row}>
+            <button style={styles.btn} onClick={() => setShowTaskModal(true)}>
+              Add Task
+            </button>
+          </div>
 
               <div style={styles.row}>
                 <button style={styles.btn} onClick={deleteTask}>
