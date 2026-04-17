@@ -1,7 +1,7 @@
-import { BrowserRouter } from "react-router-dom";
+// import { BrowserRouter } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Sprint from "./components/Sprint";
-import Task from "./components/Task";
+import TaskPage from "./components/Task";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
         <Route path="/sprint" element={<Sprint />} />
 
         {/* Task Page */}
-        <Route path="/task" element={<Task />} />
+        <Route path="/task" element={<TaskPage />} />
       </Routes>
     </BrowserRouter>
   );
