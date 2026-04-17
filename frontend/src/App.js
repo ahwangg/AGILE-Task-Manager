@@ -1,4 +1,4 @@
-// import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Sprint from "./components/Sprint";
 import TaskPage from "./components/Task";
