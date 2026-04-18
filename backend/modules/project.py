@@ -10,7 +10,7 @@ class Project(Base):
     name = Column(String, nullable=False)
 
     # relationship to Sprint
-    #sprints = relationship("Sprint", backref="project", cascade="all, delete")
+    sprints = relationship("Sprint", backref="project", cascade="all, delete")
 
 
 
