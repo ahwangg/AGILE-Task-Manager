@@ -6,7 +6,7 @@ from modules.database.database import Base
 # Import ALL models so SQLAlchemy can resolve relationships between them
 import modules.project       # loads Project
 import modules.sprint        # loads Sprint
-import modules.task  # add this line with the other imports
+import modules.task  
 
 from modules.task_api import router as task_router  
 
