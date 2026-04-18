@@ -6,6 +6,10 @@ from modules.database.database import Base
 # Import ALL models so SQLAlchemy can resolve relationships between them
 import modules.project       # loads Project
 import modules.sprint        # loads Sprint
+import modules.task  # add this line with the other imports
+
+from modules.task_api import router as task_router  # add this
+
  
 from modules.project_api import router as project_router
 from modules.sprint_api import router as sprint_router
@@ -24,3 +28,4 @@ def startup():
 
 app.include_router(project_router)
 app.include_router(sprint_router)
+app.include_router(task_router)  
