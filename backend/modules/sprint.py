@@ -7,6 +7,7 @@ class Sprint(Base):
     __tablename__ = "sprints"
  
     id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, default="Sprint") 
     number = Column(Integer, nullable=False)
     start_date = Column(DateTime)
     end_date = Column(DateTime)
