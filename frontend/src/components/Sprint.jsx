@@ -6,7 +6,9 @@ const API = "http://localhost:8000";
 function Sprint() {
   const { id: projectId } = useParams(); // get project id from URL
   const navigate = useNavigate();
-
+  
+  const [sprints, setSprints] = useState([]);
+  const [selectedSprint, setSelectedSprint] = useState(null);
   const [name, setName] = useState("");
   const [sprintId, setSprintId] = useState(null);
   const [active, setActive] = useState(false);
@@ -175,64 +177,148 @@ function Sprint() {
       </svg>
 
       <div style={styles.content}>
-        {/* HEADER */}
-        <div style={styles.header}>
-          <button onClick={() => navigate("/dashboard")} style={styles.backBtn}>
-            ← Home
-          </button>
-          <div style={styles.seedIcon}>🌱</div>
-          <div>
-            <h1 style={styles.title}>Sprint Board</h1>
-            <p style={styles.subtitle}>Project #{projectId}</p>
-            <p style={{ color: active ? "#4caf50" : "#c9a87a", fontWeight: "bold", marginTop: 4 }}>
-              Sprint Status: {active ? "ACTIVE 🟢" : "INACTIVE ⚪"}
-            </p>
-            {sprintId && <p style={{ fontSize: 12, opacity: 0.7, color: "#c9a87a" }}>Sprint ID: #{sprintId}</p>}
-          </div>
+    {/* HEADER */}
+    <div style={styles.header}>
+   <button onClick={() => navigate("/dashboard")} style={styles.backBtn}>
+    ← Home
+    </button>
+
+    <div style={styles.seedIcon}>🌱</div>
+
+    <div>
+    <h1 style={styles.title}>
+      {selectedSprint ? selectedSprint.name : "Sprint Board"}
+    </h1>
+
+    <p style={styles.subtitle}>Project #{projectId}</p>
+
+    <p
+      style={{
+        color: active ? "#4caf50" : "#c9a87a",
+        fontWeight: "bold",
+        marginTop: 4,
+      }}
+    >
+      Sprint Status: {active ? "ACTIVE 🟢" : "INACTIVE ⚪"}
+    </p>
+
+    {sprintId && (
+      <p style={{ fontSize: 12, opacity: 0.7, color: "#c9a87a" }}>
+        Sprint ID: #{sprintId}
+      </p>
+    )}
+
+    {/* ✅ ADD THIS */}
+    {selectedSprint && (
+      <button
+        style={styles.button}
+        onClick={() =>
+          navigate("/tasks", {
+            state: { sprintId: selectedSprint.id },
+          })
+        }
+      >
+        Open Task Page →
+      </button>
+    )}
+  </div>
+</div>
+
+{/* TASK MODAL */}
+{showTaskModal && (
+  <div style={styles.modalOverlay} onClick={() => setShowTaskModal(false)}>
+    <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+      <h2 style={styles.modalTitle}>Create New Task</h2>
+
+      <form
+        onSubmit={handleCreateTask}
+        style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+      >
+        <div>
+          <label style={styles.label}>Select Sprint:</label>
+
+          <select
+            value={selectedSprintForTask}
+            onChange={e => setSelectedSprintForTask(e.target.value)}
+            style={styles.input}
+          >
+            <option value="">-- Choose a sprint --</option>
+
+            {sprints.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* TASK MODAL */}
-        {showTaskModal && (
-          <div style={styles.modalOverlay} onClick={() => setShowTaskModal(false)}>
-            <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
-              <h2 style={styles.modalTitle}>Create New Task</h2>
-              <form onSubmit={handleCreateTask} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                <div>
-                  <label style={styles.label}>Select Sprint:</label>
-                  <select value={selectedSprintForTask} onChange={e => setSelectedSprintForTask(e.target.value)} style={styles.input}>
-                    <option value="">-- Choose a sprint --</option>
-                    {sprintId && <option value={sprintId}>Sprint #{sprintId}</option>}
-                  </select>
-                </div>
-                <div>
-                  <label style={styles.label}>Task Name:</label>
-                  <input type="text" value={taskForm.name} onChange={e => handleTaskFormChange("name", e.target.value)} placeholder="Enter task name" style={styles.input} />
-                </div>
-                <div>
-                  <label style={styles.label}>Description:</label>
-                  <textarea value={taskForm.description} onChange={e => handleTaskFormChange("description", e.target.value)} placeholder="Enter task description" style={{ ...styles.input, minHeight: "80px", fontFamily: "Arial" }} />
-                </div>
-                <div>
-                  <label style={styles.label}>Priority:</label>
-                  <select value={taskForm.priority} onChange={e => handleTaskFormChange("priority", e.target.value)} style={styles.input}>
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={styles.label}>Due Date:</label>
-                  <input type="date" value={taskForm.dueDate} onChange={e => handleTaskFormChange("dueDate", e.target.value)} style={styles.input} />
-                </div>
-                <div style={styles.buttonGroup}>
-                  <button type="submit" style={styles.button}>Create Task</button>
-                  <button type="button" onClick={() => setShowTaskModal(false)} style={{ ...styles.button, backgroundColor: "#999" }}>Cancel</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        <div>
+          <label style={styles.label}>Task Name:</label>
+          <input
+            type="text"
+            value={taskForm.name}
+            onChange={e => handleTaskFormChange("name", e.target.value)}
+            placeholder="Enter task name"
+            style={styles.input}
+          />
+        </div>
 
+        <div>
+          <label style={styles.label}>Description:</label>
+          <textarea
+            value={taskForm.description}
+            onChange={e => handleTaskFormChange("description", e.target.value)}
+            placeholder="Enter task description"
+            style={{
+              ...styles.input,
+              minHeight: "80px",
+              fontFamily: "Arial"
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={styles.label}>Priority:</label>
+
+          <select
+            value={taskForm.priority}
+            onChange={e => handleTaskFormChange("priority", e.target.value)}
+            style={styles.input}
+          >
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={styles.label}>Due Date:</label>
+
+          <input
+            type="date"
+            value={taskForm.dueDate}
+            onChange={e => handleTaskFormChange("dueDate", e.target.value)}
+            style={styles.input}
+          />
+        </div>
+
+        <div style={styles.buttonGroup}>
+          <button type="submit" style={styles.button}>
+            Create Task
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowTaskModal(false)}
+            style={{ ...styles.button, backgroundColor: "#999" }}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
         <div style={styles.mainLayout}>
           {/* SIDEBAR */}
           <div style={styles.sidebar}>
