@@ -83,6 +83,15 @@ function Sprint() {
     fetchTasks(data.id);
   };
 
+  const fetchSprints = async () => {
+  try {
+    const res = await fetch(`${API}/sprints/?project_id=${projectId}`);
+    const data = await res.json();
+    setSprints(Array.isArray(data) ? data : []);
+  } catch (err) {
+    setSprints([]);
+  }
+};
   // -----------------------------
   // LOAD TASKS
   // -----------------------------
