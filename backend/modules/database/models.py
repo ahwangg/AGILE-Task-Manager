@@ -40,4 +40,4 @@ class Task(Base):
     due_date = Column(DateTime)
     is_archived = Column(Boolean, default=False)
  
-    sprint_id = Column(Integer, ForeignKey("sprints.id"))  # ← added
+    sprint_id = Column(Integer, ForeignKey("sprints.id"))
