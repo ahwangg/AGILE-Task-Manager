@@ -1,19 +1,20 @@
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Sprint from "./components/Sprint";
 import TaskPage from "./components/Task";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Redirect root to dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Dashboard */}
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
 
         {/* Sprint Board */}
-        <Route path="/sprint" element={<Sprint />} />
+        <Route path="/projects/:id" element={<Sprint />} />
 
         {/* Task Page */}
         <Route path="/task" element={<TaskPage />} />
