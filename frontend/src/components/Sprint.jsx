@@ -374,6 +374,13 @@ function Sprint() {
 function Column({ title, tasks = [], moveTask, archiveTask }) {
   const nextStatus = title === "To Do" ? "inprogress" : title === "In Progress" ? "done" : null;
 
+  const prevStatus =
+    title === "Done"
+      ? "inprogress"
+      : title === "In Progress"
+      ? "todo"
+      : null;
+
   return (
     <div style={styles.column}>
       <h3 style={styles.colTitle}>{title}</h3>
@@ -386,6 +393,9 @@ function Column({ title, tasks = [], moveTask, archiveTask }) {
               <p style={styles.taskTitle}>{t.name}</p>
               <p style={styles.taskMeta}>#{t.id}</p>
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                {prevStatus && (
+                  <button style={styles.smallBtn} onClick={() => moveTask(t.id, prevStatus)}>← Back</button>
+                )}
                 {nextStatus && (
                   <button style={styles.smallBtn} onClick={() => moveTask(t.id, nextStatus)}>Move →</button>
                 )}
