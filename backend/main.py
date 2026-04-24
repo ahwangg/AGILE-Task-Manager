@@ -4,9 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from modules.database.database import engine
 from modules.database.database import Base
 
-import modules.project
-import modules.sprint
-import modules.task_db  
+# Import ALL models so SQLAlchemy can resolve relationships between them
+import modules.project       # loads Project
+import modules.sprint        # loads Sprint
+import modules.task 
+
+from modules.task_api import router as task_router 
 
 from modules.project_api import router as project_router
 from modules.sprint_api import router as sprint_router
