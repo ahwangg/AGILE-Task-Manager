@@ -140,10 +140,10 @@ function Sprint() {
     setTasks(prev => prev.filter(t => t.id !== taskId));
   };
 
-  const deleteTask = () => {
-    if (!window.confirm("Delete last task?")) return;
-    setTasks(prev => prev.slice(0, -1));
-  };
+  const deleteTask = (taskId) => {
+    if (!window.confirm("Remove this task?")) return;
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+};
 
   // -----------------------------
   // SPRINT ACTIONS
@@ -341,29 +341,70 @@ function Sprint() {
                 <button style={styles.button}>Create</button>
               </form>
             </div>
+            {/* Select Sprint */}
+            <div style={styles.card}>
+              <h2 style={styles.cardTitle}>Select Sprint</h2>
 
+              <select
+                value={selectedSprint?.id || ""}
+                onChange={(e) => {
+                  const sprint = sprints.find(s => s.id === Number(e.target.value));
+                  if (!sprint) return;
+
+                  setSelectedSprint(sprint);
+                  setSprintId(sprint.id);
+                  setActive(sprint.active || false);
+                  fetchTasks(sprint.id);
+                }}
+                style={styles.input}
+              >
+                <option value="">-- Choose a sprint --</option>
+
+                {sprints.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             {/* Actions */}
             <div style={styles.card}>
               <h2 style={styles.cardTitle}>Actions</h2>
+
               <div style={styles.row}>
-                <button style={styles.btn} onClick={() => setShowTaskModal(true)}>Add Task</button>
+                <button style={styles.btn} onClick={() => setShowTaskModal(true)}>
+                  ➕ Add Task
+                </button>
               </div>
+
+              {/* Optional helper text instead of broken delete */}
               <div style={styles.row}>
-                <button style={styles.btn} onClick={deleteTask}>Delete Last</button>
+                <span style={{ fontSize: 12, opacity: 0.6 }}>
+                  Use 🗑️ on tasks to delete
+                </span>
               </div>
+
               <div style={styles.row}>
-                <button style={styles.btn} onClick={startSprint}>Start Sprint</button>
-                <button style={styles.btn} onClick={endSprint}>End Sprint</button>
-                <button style={styles.btnDanger} onClick={deleteSprint}>Remove Sprint</button>
+                <button style={styles.btn} onClick={startSprint}>
+                  ▶️ Start
+                </button>
+
+                <button style={styles.btn} onClick={endSprint}>
+                  ⏹️ End
+                </button>
+
+                <button style={styles.btnDanger} onClick={deleteSprint}>
+                  ❌ Remove
+                </button>
               </div>
             </div>
           </div>
 
           {/* BOARD */}
           <div style={styles.board}>
-            <Column title="To Do" tasks={todo} moveTask={moveTask} archiveTask={archiveTask} />
-            <Column title="In Progress" tasks={inprogress} moveTask={moveTask} archiveTask={archiveTask} />
-            <Column title="Done" tasks={done} moveTask={moveTask} archiveTask={archiveTask} />
+          <Column title="To Do" tasks={todo} moveTask={moveTask} archiveTask={archiveTask} deleteTask={deleteTask} />
+          <Column title="In Progress" tasks={inprogress} moveTask={moveTask} archiveTask={archiveTask} deleteTask={deleteTask} />
+          <Column title="Done" tasks={done} moveTask={moveTask} archiveTask={archiveTask} deleteTask={deleteTask} />
           </div>
         </div>
       </div>
@@ -371,19 +412,21 @@ function Sprint() {
   );
 }
 
-function Column({ title, tasks = [], moveTask, archiveTask }) {
-  const nextStatus = title === "To Do" ? "inprogress" : title === "In Progress" ? "done" : null;
+function Column({ title, tasks = [], moveTask, archiveTask, deleteTask }) {
+  const nextStatus =
+    title === "To Do" ? "inprogress" :
+    title === "In Progress" ? "done" :
+    null;
 
   const prevStatus =
-    title === "Done"
-      ? "inprogress"
-      : title === "In Progress"
-      ? "todo"
-      : null;
+    title === "Done" ? "inprogress" :
+    title === "In Progress" ? "todo" :
+    null;
 
   return (
     <div style={styles.column}>
       <h3 style={styles.colTitle}>{title}</h3>
+
       <div style={styles.taskContainer}>
         {tasks.length === 0 ? (
           <p style={{ opacity: 0.5, color: "#3a2a1a" }}>Empty</p>
@@ -392,14 +435,43 @@ function Column({ title, tasks = [], moveTask, archiveTask }) {
             <div key={t.id} style={styles.taskCard}>
               <p style={styles.taskTitle}>{t.name}</p>
               <p style={styles.taskMeta}>#{t.id}</p>
+
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 {prevStatus && (
-                  <button style={styles.smallBtn} onClick={() => moveTask(t.id, prevStatus)}>← Back</button>
+                  <button
+                    style={styles.smallBtn}
+                    onClick={() => moveTask(t.id, prevStatus)}
+                    title="Move Back"
+                  >
+                    ←
+                  </button>
                 )}
+
                 {nextStatus && (
-                  <button style={styles.smallBtn} onClick={() => moveTask(t.id, nextStatus)}>Move →</button>
+                  <button
+                    style={styles.smallBtn}
+                    onClick={() => moveTask(t.id, nextStatus)}
+                    title="Move Forward"
+                  >
+                    →
+                  </button>
                 )}
-                <button style={styles.smallBtnDanger} onClick={() => archiveTask(t.id)}>Archive</button>
+
+                <button
+                  style={styles.smallBtnDanger}
+                  onClick={() => archiveTask(t.id)}
+                  title="Archive Task"
+                >
+                  📦
+                </button>
+
+                <button
+                  style={styles.smallBtnDanger}
+                  onClick={() => deleteTask(t.id)}
+                  title="Delete Task"
+                >
+                  🗑️
+                </button>
               </div>
             </div>
           ))
