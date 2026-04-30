@@ -87,7 +87,7 @@ export default function Dashboard() {
           <div style={styles.seedIcon}>🌱</div>
           <div>
             <h1 style={styles.title}>My Projects</h1>
-            <p style={styles.subtitle}>Select a project to view its sprint board</p>
+            <p style={styles.subtitle}>Select a project to view its sprint page.</p>
           </div>
         </div>
 

@@ -6,7 +6,7 @@ from typing import Optional, List
 from datetime import datetime
  
 from modules.database.deps import get_db
-from modules.sprint import Sprint
+from modules.database.models import Sprint, Project
  
 class SprintCreate(BaseModel):
     project_id: int

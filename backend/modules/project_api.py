@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import List
 
 from modules.database.deps import get_db
-from modules.project import Project
+from modules.database.models import Project, Sprint
 
 # --- Pydantic Schemas ---
 class ProjectCreate(BaseModel):

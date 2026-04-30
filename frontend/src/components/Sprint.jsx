@@ -219,19 +219,16 @@ function Sprint() {
       </p>
     )}
 
-    {/* ✅ ADD THIS */}
-    {selectedSprint && (
       <button
         style={styles.button}
         onClick={() =>
-          navigate("/tasks", {
-            state: { sprintId: selectedSprint.id },
-          })
-        }
+          navigate(`/projects/${projectId}/backlog`)
+          }
+        
       >
-        Open Task Page →
+        Open Product Backlog →
       </button>
-    )}
+    
   </div>
 </div>
 

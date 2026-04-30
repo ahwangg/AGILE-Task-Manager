@@ -5,11 +5,7 @@ from modules.database.database import engine
 from modules.database.database import Base
 
 # Import ALL models so SQLAlchemy can resolve relationships between them
-import modules.project       # loads Project
-import modules.sprint        # loads Sprint
-import modules.task 
-
-from modules.task_api import router as task_router 
+from modules.database.models import Task, Sprint, Project # loads all models once
 
 from modules.project_api import router as project_router
 from modules.sprint_api import router as sprint_router

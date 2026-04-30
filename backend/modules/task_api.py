@@ -6,7 +6,8 @@ from typing import Optional, List
 from datetime import datetime
 
 from modules.database.deps import get_db
-from modules.task_db import TaskDB as Task
+from modules.database.models import Task
+from modules.database.models import Sprint
 
 # --- Pydantic Schemas ---
 class TaskCreate(BaseModel):
@@ -40,7 +41,7 @@ def create_task(data: TaskCreate, db: Session = Depends(get_db)):
         name=data.name,
         description=data.description,
         priority=data.priority,
-        due_date=data.dueDate,
+        due_date=data.dueDate if data.dueDate else None,
         status="todo",
         sprint_id=data.sprintId,
     )
@@ -48,6 +49,10 @@ def create_task(data: TaskCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(task)
     return task
+
+@router.get("/project/{project_id}", response_model=List[TaskResponse])
+def get_tasks_by_project(project_id: int, db: Session = Depends(get_db)):
+    return db.query(Task).join(Sprint).filter(Sprint.project_id == project_id).all()
 
 @router.get("/{sprint_id}", response_model=List[TaskResponse])
 def get_tasks(sprint_id: int, db: Session = Depends(get_db)):

@@ -33,8 +33,8 @@ class Task(Base):
     __tablename__ = "tasks"
  
     id = Column(Integer, primary_key=True, index=True)
-    task_name = Column(String, nullable=False)
-    task_description = Column(String)
+    name = Column(String, nullable=False)
+    description = Column(String)
     status = Column(String, default="todo")
     priority = Column(String, default="Low")
     due_date = Column(DateTime)
