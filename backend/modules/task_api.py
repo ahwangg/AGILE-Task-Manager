@@ -25,7 +25,7 @@ class TaskResponse(BaseModel):
     name: str
     description: Optional[str] = ""
     priority: Optional[str] = "Low"
-    due_date: Optional[str] = ""
+    due_date: Optional[datetime] = None
     status: str
     sprint_id: int
 
@@ -41,7 +41,7 @@ def create_task(data: TaskCreate, db: Session = Depends(get_db)):
         name=data.name,
         description=data.description,
         priority=data.priority,
-        due_date=data.dueDate if data.dueDate else None,
+        due_date=datetime.strptime(data.dueDate, "%Y-%m-%d") if data.dueDate else None,
         status="todo",
         sprint_id=data.sprintId,
     )
