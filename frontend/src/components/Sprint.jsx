@@ -1,19 +1,24 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import seed from "../assets/images/seed_plant.webp";
+import sprout from "../assets/images/sprout_plant.webp";
+import leafy from "../assets/images/leafy_plant.webp";
+import bloom from "../assets/images/bloom_plant.webp";
+import flower from "../assets/images/flower_plant.webp";
 
 const API = "http://localhost:8000";
 
 function Sprint() {
-  const { id: projectId } = useParams(); // get project id from URL
+  const { id: projectId } = useParams();
   const navigate = useNavigate();
-  
+
   const [sprints, setSprints] = useState([]);
   const [selectedSprint, setSelectedSprint] = useState(null);
   const [name, setName] = useState("");
   const [sprintId, setSprintId] = useState(null);
   const [active, setActive] = useState(false);
   const [tasks, setTasks] = useState([]);
-  const [taskName, setTaskName] = useState("");
+  const [animatePlant, setAnimatePlant] = useState(false)
 
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedSprintForTask, setSelectedSprintForTask] = useState("");
@@ -29,12 +34,18 @@ function Sprint() {
   };
 
   const resetTaskForm = () => {
-    setTaskForm({ name: "", description: "", priority: "Low", dueDate: "" });
+    setTaskForm({
+      name: "",
+      description: "",
+      priority: "Low",
+      dueDate: "",
+    });
     setSelectedSprintForTask("");
   };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
+
     if (!taskForm.name.trim()) return alert("Task name is required");
     if (!selectedSprintForTask) return alert("Please select a sprint");
 
@@ -50,7 +61,9 @@ function Sprint() {
           dueDate: taskForm.dueDate,
         }),
       });
+
       if (!res.ok) throw new Error("Failed to create task");
+
       const newTask = await res.json();
       setTasks(prev => [...prev, newTask]);
       setShowTaskModal(false);
@@ -60,43 +73,42 @@ function Sprint() {
     }
   };
 
-  // -----------------------------
-  // CREATE SPRINT
-  // -----------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!name || !projectId) return alert("Please fill in all fields");
 
     const res = await fetch(`${API}/sprints/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: name,
+        name,
         number: 1,
         project_id: parseInt(projectId),
       }),
     });
 
     const data = await res.json();
+
     setSprintId(data.id);
+    setSelectedSprint(data);
     setActive(data.active || false);
     setName("");
+
     fetchSprints();
     fetchTasks(data.id);
   };
 
   const fetchSprints = async () => {
-  try {
-    const res = await fetch(`${API}/sprints/project/${projectId}`);
-    const data = await res.json();
-    setSprints(Array.isArray(data) ? data : []);
-  } catch (err) {
-    setSprints([]);
-  }
-};
-  // -----------------------------
-  // LOAD TASKS
-  // -----------------------------
+    try {
+      const res = await fetch(`${API}/sprints/project/${projectId}`);
+      const data = await res.json();
+      setSprints(Array.isArray(data) ? data : []);
+    } catch {
+      setSprints([]);
+    }
+  };
+
   const fetchTasks = async (id) => {
     try {
       const res = await fetch(`${API}/api/tasks/${id}`);
@@ -111,69 +123,115 @@ function Sprint() {
     fetchSprints();
   }, [projectId]);
 
-  // -----------------------------
-  // ADD TASK
-  // -----------------------------
-  const addTask = async () => {
-    if (!sprintId) return alert("Create sprint first");
-    if (!taskName.trim()) return alert("Enter a task name");
-
-    const res = await fetch(`${API}/api/tasks`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sprintId, name: taskName }),
-    });
-
-    const newTask = await res.json();
-    setTasks(prev => [...prev, newTask]);
-    setTaskName("");
-  };
-
-  // -----------------------------
-  // MOVE / ARCHIVE / DELETE TASK
-  // -----------------------------
   const moveTask = (taskId, status) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+    setTasks(prev =>
+      prev.map(t =>
+        t.id === taskId ? { ...t, status } : t
+      )
+    );
   };
 
   const archiveTask = (taskId) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId));
+    setTasks(prev =>
+      prev.map(t =>
+        t.id === taskId ? { ...t, archived: true } : t
+      )
+    );
   };
 
   const deleteTask = (taskId) => {
     if (!window.confirm("Remove this task?")) return;
     setTasks(prev => prev.filter(t => t.id !== taskId));
-};
+  };
 
-  // -----------------------------
-  // SPRINT ACTIONS
-  // -----------------------------
   const startSprint = async () => {
-    if (!sprintId) return alert("Create sprint first");
-    await fetch(`${API}/sprints/${sprintId}/start`, { method: "POST" });
+    if (!sprintId) return alert("Create or select a sprint first");
+
+    await fetch(`${API}/sprints/${sprintId}/start`, {
+      method: "POST",
+    });
+
     setActive(true);
   };
 
   const endSprint = async () => {
     if (!sprintId) return;
-    await fetch(`${API}/sprints/${sprintId}/end`, { method: "POST" });
+
+    await fetch(`${API}/sprints/${sprintId}/end`, {
+      method: "POST",
+    });
+
     setActive(false);
   };
 
   const deleteSprint = async () => {
     if (!sprintId) return;
-    await fetch(`${API}/sprints/${sprintId}`, { method: "DELETE" });
+
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this sprint? Tasks assigned to this sprint may also be affected."
+      )
+    ) {
+      return;
+    }
+
+    await fetch(`${API}/sprints/${sprintId}`, {
+      method: "DELETE",
+    });
+
     setSprintId(null);
+    setSelectedSprint(null);
     setTasks([]);
     setActive(false);
+    fetchSprints();
   };
 
-  // -----------------------------
-  // COLUMN FILTERS
-  // -----------------------------
-  const todo = tasks.filter(t => t.status === "todo");
-  const inprogress = tasks.filter(t => t.status === "inprogress");
-  const done = tasks.filter(t => t.status === "done");
+const activeTasks = tasks.filter(t => !t.archived);
+
+const getTaskPoints = (priority) => {
+  if (priority === "High") return 3;
+  if (priority === "Medium") return 2;
+  return 1;
+};
+
+// total goal like plant.py
+const totalPoints = 10;
+
+// points earned only from completed tasks
+const earnedPoints = activeTasks
+  .filter(task => task.status === "done")
+  .reduce((sum, task) => sum + getTaskPoints(task.priority), 0);
+
+const plantProgress =
+  totalPoints === 0
+    ? 0
+    : Math.min(Math.round((earnedPoints / totalPoints) * 100), 100);
+
+const getPlantImage = () => {
+  if (plantProgress < 25) return seed;
+  if (plantProgress < 50) return sprout;
+  if (plantProgress < 75) return leafy;
+  if (plantProgress < 100) return bloom;
+  return flower;
+};
+
+useEffect(() => {
+  if (earnedPoints > 0) {
+    setAnimatePlant(true);
+
+    const timer = setTimeout(() => {
+      setAnimatePlant(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }
+}, [earnedPoints]);
+
+const todo = activeTasks.filter(t => t.status === "todo");
+const inprogress = activeTasks.filter(t => t.status === "inprogress");
+const done = activeTasks.filter(t => t.status === "done");
+
+const archivedTasks = tasks.filter(t => t.archived);
 
   return (
     <div style={styles.page}>
@@ -183,169 +241,217 @@ function Sprint() {
       <div style={styles.soilLayer2} />
 
       <svg style={styles.rootsSvg} viewBox="0 0 400 300">
-        <path d="M200 0 Q180 60 150 100 Q120 140 80 180 Q50 210 20 280"
-          stroke="#5c3a1e" strokeWidth="3" fill="none" opacity="0.3" />
+        <path
+          d="M200 0 Q180 60 150 100 Q120 140 80 180 Q50 210 20 280"
+          stroke="#5c3a1e"
+          strokeWidth="3"
+          fill="none"
+          opacity="0.3"
+        />
       </svg>
 
       <div style={styles.content}>
-    {/* HEADER */}
-    <div style={styles.header}>
-   <button onClick={() => navigate("/dashboard")} style={styles.backBtn}>
-    ← Home
-    </button>
-
-    <div style={styles.seedIcon}>🌱</div>
-
-    <div>
-    <h1 style={styles.title}>
-      {selectedSprint ? selectedSprint.name : "Sprint Board"}
-    </h1>
-
-    <p style={styles.subtitle}>Project #{projectId}</p>
-
-    <p
-      style={{
-        color: active ? "#4caf50" : "#c9a87a",
-        fontWeight: "bold",
-        marginTop: 4,
-      }}
-    >
-      Sprint Status: {active ? "ACTIVE 🟢" : "INACTIVE ⚪"}
-    </p>
-
-    {sprintId && (
-      <p style={{ fontSize: 12, opacity: 0.7, color: "#c9a87a" }}>
-        Sprint ID: #{sprintId}
-      </p>
-    )}
-
-      <button
-        style={styles.button}
-        onClick={() =>
-          navigate(`/projects/${projectId}/backlog`)
-          }
-        
-      >
-        Open Product Backlog →
-      </button>
-    
-  </div>
-</div>
-
-{/* TASK MODAL */}
-{showTaskModal && (
-  <div style={styles.modalOverlay} onClick={() => setShowTaskModal(false)}>
-    <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
-      <h2 style={styles.modalTitle}>Create New Task</h2>
-
-      <form
-        onSubmit={handleCreateTask}
-        style={{ display: "flex", flexDirection: "column", gap: "15px" }}
-      >
-        <div>
-          <label style={styles.label}>Select Sprint:</label>
-
-          <select
-            value={selectedSprintForTask}
-            onChange={e => setSelectedSprintForTask(e.target.value)}
-            style={styles.input}
-          >
-            <option value="">-- Choose a sprint --</option>
-
-            {sprints.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label style={styles.label}>Task Name:</label>
-          <input
-            type="text"
-            value={taskForm.name}
-            onChange={e => handleTaskFormChange("name", e.target.value)}
-            placeholder="Enter task name"
-            style={styles.input}
-          />
-        </div>
-
-        <div>
-          <label style={styles.label}>Description:</label>
-          <textarea
-            value={taskForm.description}
-            onChange={e => handleTaskFormChange("description", e.target.value)}
-            placeholder="Enter task description"
-            style={{
-              ...styles.input,
-              minHeight: "80px",
-              fontFamily: "Arial"
-            }}
-          />
-        </div>
-
-        <div>
-          <label style={styles.label}>Priority:</label>
-
-          <select
-            value={taskForm.priority}
-            onChange={e => handleTaskFormChange("priority", e.target.value)}
-            style={styles.input}
-          >
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </select>
-        </div>
-
-        <div>
-          <label style={styles.label}>Due Date:</label>
-
-          <input
-            type="date"
-            value={taskForm.dueDate}
-            onChange={e => handleTaskFormChange("dueDate", e.target.value)}
-            style={styles.input}
-          />
-        </div>
-
-        <div style={styles.buttonGroup}>
-          <button type="submit" style={styles.button}>
-            Create Task
+        <div style={styles.header}>
+          <button onClick={() => navigate("/dashboard")} style={styles.backBtn}>
+            ← Home
           </button>
 
-          <button
-            type="button"
+          <div style={styles.seedIcon}>
+            <img
+              src={getPlantImage()}
+              alt="plant"
+              style={{
+                width: 70,
+                height: 70,
+                objectFit: "contain",
+                transform: animatePlant
+                  ? "scale(1.3)"
+                  : `scale(${1 + plantProgress / 200})`,
+                transition: "transform 0.3s ease",
+              }}
+            />
+          </div>
+
+          <div>
+            <h1 style={styles.title}>
+              {selectedSprint ? selectedSprint.name : "Sprint Board"}
+            </h1>
+
+            <p style={styles.subtitle}>Project #{projectId}</p>
+
+            <p
+              style={{
+                color: active ? "#4caf50" : "#c9a87a",
+                fontWeight: "bold",
+                marginTop: 4,
+              }}
+            >
+              Sprint Status: {active ? "ACTIVE 🟢" : "INACTIVE ⚪"}
+            </p>
+
+            <p style={{ color: "#c9a87a", marginTop: 4 }}>
+              🌱 Plant grows when tasks are completed
+            </p>
+
+            <p style={{ color: "#c9a87a", marginTop: 2 }}>
+              Progress: {earnedPoints} / {totalPoints} points
+            </p>
+
+            {sprintId && (
+              <p style={{ fontSize: 12, opacity: 0.7, color: "#c9a87a" }}>
+                Sprint ID: #{sprintId}
+              </p>
+            )}
+
+            <button
+              style={styles.button}
+              onClick={() => navigate(`/projects/${projectId}/backlog`)}
+            >
+              Open Product Backlog →
+            </button>
+          </div>
+        </div>
+
+        {showTaskModal && (
+          <div
+            style={styles.modalOverlay}
             onClick={() => setShowTaskModal(false)}
-            style={{ ...styles.button, backgroundColor: "#999" }}
           >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+            <div
+              style={styles.modalContent}
+              onClick={e => e.stopPropagation()}
+            >
+              <h2 style={styles.modalTitle}>Create New Task</h2>
+
+              <form
+                onSubmit={handleCreateTask}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
+                }}
+              >
+                <div>
+                  <label style={styles.label}>Select Sprint:</label>
+
+                  <select
+                    value={selectedSprintForTask}
+                    onChange={e => setSelectedSprintForTask(e.target.value)}
+                    style={styles.input}
+                  >
+                    <option value="">-- Choose a sprint --</option>
+
+                    {sprints.map(s => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Task Name:</label>
+                  <input
+                    type="text"
+                    value={taskForm.name}
+                    onChange={e =>
+                      handleTaskFormChange("name", e.target.value)
+                    }
+                    placeholder="Enter task name"
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Description:</label>
+                  <textarea
+                    value={taskForm.description}
+                    onChange={e =>
+                      handleTaskFormChange("description", e.target.value)
+                    }
+                    placeholder="Enter task description"
+                    style={{
+                      ...styles.input,
+                      minHeight: "80px",
+                      fontFamily: "Arial",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={styles.label}>Priority:</label>
+
+                  <select
+                    value={taskForm.priority}
+                    onChange={e =>
+                      handleTaskFormChange("priority", e.target.value)
+                    }
+                    style={styles.input}
+                  >
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={styles.label}>Due Date:</label>
+
+                  <input
+                    type="date"
+                    value={taskForm.dueDate}
+                    onChange={e =>
+                      handleTaskFormChange("dueDate", e.target.value)
+                    }
+                    style={styles.input}
+                  />
+                </div>
+
+                <div style={styles.buttonGroup}>
+                  <button type="submit" style={styles.button}>
+                    Create Task
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowTaskModal(false)}
+                    style={{ ...styles.button, backgroundColor: "#999" }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <div style={styles.mainLayout}>
-          {/* SIDEBAR */}
           <div style={styles.sidebar}>
-            {/* Create Sprint */}
             <div style={styles.card}>
               <h2 style={styles.cardTitle}>Create Sprint</h2>
+
               <form onSubmit={handleSubmit} style={styles.form}>
-                <input style={styles.input} value={name} onChange={e => setName(e.target.value)} placeholder="Sprint name" />
+                <input
+                  style={styles.input}
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Sprint name"
+                />
+
                 <button style={styles.button}>Create</button>
               </form>
             </div>
-            {/* Select Sprint */}
+
             <div style={styles.card}>
               <h2 style={styles.cardTitle}>Select Sprint</h2>
 
               <select
                 value={selectedSprint?.id || ""}
-                onChange={(e) => {
-                  const sprint = sprints.find(s => s.id === Number(e.target.value));
+                onChange={e => {
+                  const sprint = sprints.find(
+                    s => s.id === Number(e.target.value)
+                  );
+
                   if (!sprint) return;
 
                   setSelectedSprint(sprint);
@@ -357,24 +463,25 @@ function Sprint() {
               >
                 <option value="">-- Choose a sprint --</option>
 
-                {sprints.map((s) => (
+                {sprints.map(s => (
                   <option key={s.id} value={s.id}>
                     {s.name}
                   </option>
                 ))}
               </select>
             </div>
-            {/* Actions */}
+
             <div style={styles.card}>
               <h2 style={styles.cardTitle}>Actions</h2>
 
               <div style={styles.row}>
-                <button style={styles.btn} onClick={() => setShowTaskModal(true)}>
+                <button
+                  style={styles.btn}
+                  onClick={() => setShowTaskModal(true)}
+                >
                   ➕ Add Task
                 </button>
               </div>
-
-              {/* Optional helper text instead of broken delete */}
               <div style={styles.row}>
                 <span style={{ fontSize: 12, opacity: 0.6 }}>
                   Use 🗑️ on tasks to delete
@@ -397,11 +504,47 @@ function Sprint() {
             </div>
           </div>
 
-          {/* BOARD */}
-          <div style={styles.board}>
-          <Column title="To Do" tasks={todo} moveTask={moveTask} archiveTask={archiveTask} deleteTask={deleteTask} />
-          <Column title="In Progress" tasks={inprogress} moveTask={moveTask} archiveTask={archiveTask} deleteTask={deleteTask} />
-          <Column title="Done" tasks={done} moveTask={moveTask} archiveTask={archiveTask} deleteTask={deleteTask} />
+          <div style={styles.rightSide}>
+            <div style={styles.board}>
+              <Column
+                title="To Do"
+                tasks={todo}
+                moveTask={moveTask}
+                archiveTask={archiveTask}
+                deleteTask={deleteTask}
+              />
+
+              <Column
+                title="In Progress"
+                tasks={inprogress}
+                moveTask={moveTask}
+                archiveTask={archiveTask}
+                deleteTask={deleteTask}
+              />
+
+              <Column
+                title="Done"
+                tasks={done}
+                moveTask={moveTask}
+                archiveTask={archiveTask}
+                deleteTask={deleteTask}
+              />
+            </div>
+
+            <div style={styles.archiveBox}>
+              <h2 style={styles.cardTitle}>📦 Archived Tasks</h2>
+
+              {archivedTasks.length === 0 ? (
+                <p style={{ opacity: 0.6 }}>No archived tasks</p>
+              ) : (
+                archivedTasks.map(t => (
+                  <div key={t.id} style={styles.taskCard}>
+                    <p style={styles.taskTitle}>{t.name}</p>
+                    <p style={styles.taskMeta}>#{t.id}</p>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -411,14 +554,18 @@ function Sprint() {
 
 function Column({ title, tasks = [], moveTask, archiveTask, deleteTask }) {
   const nextStatus =
-    title === "To Do" ? "inprogress" :
-    title === "In Progress" ? "done" :
-    null;
+    title === "To Do"
+      ? "inprogress"
+      : title === "In Progress"
+      ? "done"
+      : null;
 
   const prevStatus =
-    title === "Done" ? "inprogress" :
-    title === "In Progress" ? "todo" :
-    null;
+    title === "Done"
+      ? "inprogress"
+      : title === "In Progress"
+      ? "todo"
+      : null;
 
   return (
     <div style={styles.column}>
@@ -479,42 +626,295 @@ function Column({ title, tasks = [], moveTask, archiveTask, deleteTask }) {
 }
 
 const styles = {
-  page: { minHeight: "100vh", position: "relative", fontFamily: "Georgia", backgroundColor: "#1a0e07", overflow: "hidden" },
-  sky: { position: "absolute", top: 0, height: "35%", width: "100%", background: "linear-gradient(180deg, #b8d4e8, #d4e8c2)" },
-  ground: { position: "absolute", top: "35%", width: "100%", bottom: 0, background: "linear-gradient(180deg, #5c3a1e, #2a1508)" },
-  soilLayer1: { position: "absolute", top: "33%", width: "100%", height: 6, background: "#7a4f2a" },
-  soilLayer2: { position: "absolute", top: "36%", width: "100%", height: 3, background: "#4a2c12" },
-  rootsSvg: { position: "absolute", top: "35%", left: "50%", transform: "translateX(-50%)", width: "400px", height: "300px", pointerEvents: "none" },
-  content: { position: "relative", zIndex: 10, maxWidth: 1200, margin: "0 auto", padding: 40 },
-  header: { display: "flex", gap: 15, alignItems: "center", marginBottom: 30 },
-  backBtn: { background: "rgba(245,230,200,0.15)", border: "1px solid rgba(245,230,200,0.3)", color: "#f5e6c8", borderRadius: 20, padding: "8px 16px", cursor: "pointer", fontSize: 14, fontFamily: "Georgia" },
-  seedIcon: { fontSize: 40 },
-  title: { color: "#f5e6c8", margin: 0 },
-  subtitle: { color: "#c9a87a", fontStyle: "italic" },
-  mainLayout: { display: "flex", gap: 20, alignItems: "stretch", minHeight: "70vh" },
-  sidebar: { width: 260, display: "flex", flexDirection: "column", gap: 20 },
-  card: { background: "rgba(245,230,200,0.92)", padding: 20, borderRadius: 12 },
-  cardTitle: { marginBottom: 10 },
-  form: { display: "flex", gap: 10 },
-  input: { width: "100%", padding: 10, borderRadius: 6, border: "1px solid #ccc", marginBottom: 10, boxSizing: "border-box" },
-  button: { background: "#8b5e3c", color: "white", border: "none", padding: "10px 15px", borderRadius: 6, cursor: "pointer" },
-  row: { display: "flex", gap: 10, marginTop: 10 },
-  btn: { background: "#8b5e3c", color: "white", border: "none", padding: 8, borderRadius: 6, cursor: "pointer" },
-  btnDanger: { background: "#7a2e2e", color: "white", border: "none", padding: 8, borderRadius: 6, cursor: "pointer" },
-  board: { flex: 1, display: "flex", gap: 15, height: "100%" },
-  column: { flex: 1, background: "rgba(245,230,200,0.85)", padding: 15, borderRadius: 10, display: "flex", flexDirection: "column", minHeight: "300px", maxHeight: "70vh" },
-  colTitle: { color: "#3a2a1a", marginBottom: 10 },
-  taskContainer: { flex: 1, overflowY: "auto", paddingRight: 5 },
-  taskCard: { background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: 10, marginBottom: 10, border: "1px solid rgba(0,0,0,0.1)", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" },
-  taskTitle: { margin: 0, fontWeight: "bold", color: "#3a2a1a" },
-  taskMeta: { margin: 0, fontSize: 12, opacity: 0.6 },
-  smallBtn: { background: "#8b5e3c", color: "white", border: "none", padding: "4px 8px", borderRadius: 5, fontSize: 12, cursor: "pointer" },
-  smallBtnDanger: { background: "#7a2e2e", color: "white", border: "none", padding: "4px 8px", borderRadius: 5, fontSize: 12, cursor: "pointer" },
-  modalOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 },
-  modalContent: { backgroundColor: "#f5f5f5", borderRadius: 8, padding: 30, maxWidth: 500, width: "90%", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" },
-  modalTitle: { marginBottom: 20, color: "#333", fontSize: 24 },
-  label: { display: "block", marginTop: 15, marginBottom: 5, fontWeight: "bold", color: "#333" },
-  buttonGroup: { marginTop: 20, display: "flex", gap: 10 },
+  page: {
+    minHeight: "100vh",
+    position: "relative",
+    fontFamily: "Georgia",
+    backgroundColor: "#1a0e07",
+    overflow: "hidden",
+  },
+
+  sky: {
+    position: "absolute",
+    top: 0,
+    height: "35%",
+    width: "100%",
+    background: "linear-gradient(180deg, #b8d4e8, #d4e8c2)",
+  },
+
+  ground: {
+    position: "absolute",
+    top: "35%",
+    width: "100%",
+    bottom: 0,
+    background: "linear-gradient(180deg, #5c3a1e, #2a1508)",
+  },
+
+  soilLayer1: {
+    position: "absolute",
+    top: "33%",
+    width: "100%",
+    height: 6,
+    background: "#7a4f2a",
+  },
+
+  soilLayer2: {
+    position: "absolute",
+    top: "36%",
+    width: "100%",
+    height: 3,
+    background: "#4a2c12",
+  },
+
+  rootsSvg: {
+    position: "absolute",
+    top: "35%",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "400px",
+    height: "300px",
+    pointerEvents: "none",
+  },
+
+  content: {
+    position: "relative",
+    zIndex: 10,
+    maxWidth: 1400,
+    margin: "0 auto",
+    padding: 40,
+  },
+
+  header: {
+    display: "flex",
+    gap: 15,
+    alignItems: "center",
+    marginBottom: 30,
+  },
+
+  backBtn: {
+    background: "rgba(245,230,200,0.15)",
+    border: "1px solid rgba(245,230,200,0.3)",
+    color: "#f5e6c8",
+    borderRadius: 20,
+    padding: "8px 16px",
+    cursor: "pointer",
+    fontSize: 14,
+    fontFamily: "Georgia",
+  },
+
+  seedIcon: {
+    fontSize: 40,
+  },
+
+  title: {
+    color: "#f5e6c8",
+    margin: 0,
+  },
+
+  subtitle: {
+    color: "#c9a87a",
+    fontStyle: "italic",
+  },
+
+  mainLayout: {
+    display: "flex",
+    gap: 24,
+    alignItems: "flex-start",
+    minHeight: "70vh",
+  },
+
+  sidebar: {
+    width: 280,
+    flexShrink: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+  },
+
+  rightSide: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: 15,
+    minWidth: 0,
+  },
+
+  card: {
+    background: "rgba(245,230,200,0.92)",
+    padding: 20,
+    borderRadius: 12,
+  },
+
+  cardTitle: {
+    marginBottom: 10,
+  },
+
+  form: {
+    display: "flex",
+    gap: 10,
+  },
+
+  input: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    marginBottom: 10,
+    boxSizing: "border-box",
+  },
+
+  button: {
+    background: "#8b5e3c",
+    color: "white",
+    border: "none",
+    padding: "10px 15px",
+    borderRadius: 6,
+    cursor: "pointer",
+  },
+
+  row: {
+    display: "flex",
+    gap: 10,
+    marginTop: 10,
+    flexWrap: "wrap",
+  },
+
+  btn: {
+    background: "#8b5e3c",
+    color: "white",
+    border: "none",
+    padding: 8,
+    borderRadius: 6,
+    cursor: "pointer",
+  },
+
+  btnDanger: {
+    background: "#7a2e2e",
+    color: "white",
+    border: "none",
+    padding: 8,
+    borderRadius: 6,
+    cursor: "pointer",
+  },
+
+  board: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(220px, 1fr))",
+    gap: 15,
+    width: "100%",
+  },
+
+  archiveBox: {
+    background: "rgba(245,230,200,0.85)",
+    padding: 15,
+    borderRadius: 10,
+    maxHeight: 180,
+    overflowY: "auto",
+  },
+
+  column: {
+    background: "rgba(245,230,200,0.85)",
+    padding: 15,
+    borderRadius: 10,
+    display: "flex",
+    flexDirection: "column",
+    minHeight: "300px",
+    maxHeight: "70vh",
+  },
+
+  colTitle: {
+    color: "#3a2a1a",
+    marginBottom: 10,
+  },
+
+  taskContainer: {
+    flex: 1,
+    overflowY: "auto",
+    paddingRight: 5,
+  },
+
+  taskCard: {
+    background: "rgba(255,255,255,0.6)",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    border: "1px solid rgba(0,0,0,0.1)",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+  },
+
+  taskTitle: {
+    margin: 0,
+    fontWeight: "bold",
+    color: "#3a2a1a",
+  },
+
+  taskMeta: {
+    margin: 0,
+    fontSize: 12,
+    opacity: 0.6,
+  },
+
+  smallBtn: {
+    background: "#8b5e3c",
+    color: "white",
+    border: "none",
+    padding: "4px 8px",
+    borderRadius: 5,
+    fontSize: 12,
+    cursor: "pointer",
+  },
+
+  smallBtnDanger: {
+    background: "#7a2e2e",
+    color: "white",
+    border: "none",
+    padding: "4px 8px",
+    borderRadius: 5,
+    fontSize: 12,
+    cursor: "pointer",
+  },
+
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+  },
+
+  modalContent: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 30,
+    maxWidth: 500,
+    width: "90%",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+  },
+
+  modalTitle: {
+    marginBottom: 20,
+    color: "#333",
+    fontSize: 24,
+  },
+
+  label: {
+    display: "block",
+    marginTop: 15,
+    marginBottom: 5,
+    fontWeight: "bold",
+    color: "#333",
+  },
+
+  buttonGroup: {
+    marginTop: 20,
+    display: "flex",
+    gap: 10,
+  },
 };
 
 export default Sprint;
