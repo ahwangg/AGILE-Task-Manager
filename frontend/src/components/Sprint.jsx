@@ -123,18 +123,46 @@ function Sprint() {
     fetchSprints();
   }, [projectId]);
 
-  const moveTask = (taskId, status) => {
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === taskId ? { ...t, status } : t
-      )
-    );
-  };
+const moveTask = async (taskId, status) => {
+  // update board instantly
+  setTasks(prev =>
+    prev.map(t =>
+      t.id === taskId ? { ...t, status } : t
+    )
+  );
+
+  // save to backend
+  try {
+    const res = await fetch(`${API}/api/tasks/${taskId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to update task");
+    }
+  } catch (err) {
+    alert("Task status failed to save.");
+  }
+};
 
   const archiveTask = (taskId) => {
     setTasks(prev =>
       prev.map(t =>
         t.id === taskId ? { ...t, archived: true } : t
+      )
+    );
+  };
+
+  const restoreTask = (taskId) => {
+    setTasks(prev =>
+      prev.map(t =>
+        t.id === taskId
+          ? { ...t, archived: false, status: "todo" }
+          : t
       )
     );
   };
@@ -541,6 +569,13 @@ const archivedTasks = tasks.filter(t => t.archived);
                   <div key={t.id} style={styles.taskCard}>
                     <p style={styles.taskTitle}>{t.name}</p>
                     <p style={styles.taskMeta}>#{t.id}</p>
+
+                    <button
+                      style={styles.smallBtn}
+                      onClick={() => restoreTask(t.id)}
+                    >
+                      ↩ Restore
+                    </button>
                   </div>
                 ))
               )}
