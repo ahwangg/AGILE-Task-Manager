@@ -124,7 +124,7 @@ Seed → Sprout → Leafy Plant → Bloom → Full Flower
 
 ## 👥 Contributors
 
-- Lexi
+- Lexie
 - Alex
 - Mariel
 - Ethan
